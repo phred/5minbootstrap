@@ -1,0 +1,62 @@
+---
+- hosts: newservers
+  sudo: True
+  vars:
+  - ubuntu_release: lucid
+  - logwatch_email: ops@practicalops.com
+
+  vars_prompt:
+    longpass: "Please enter a long and complex password for the deploy user.  Store it somewhere safe!"
+
+  tasks:
+  - name: Update all packages on the system
+    action: apt update_cache=yes upgrade=yes
+
+  - name: Install fail2ban
+    action: apt pkg=fail2ban state=installed
+
+  - name: Add deployment user
+    action: user name=deploy password=$longpass
+
+
+  - name: Add authorized deploy key for Fred
+    action: authorized_key user=deploy key='$FILE(fred.pub)'
+
+  - name: Remove sudo group rights
+    action: lineinfile dest=/etc/sudoers regexp="^%sudo" state=absent
+
+  - name: Add deploy user to sudoers
+    action: lineinfile dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) ALL" state=present
+
+  - name: Disallow root SSH access
+    action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+    notify: Restart sshd
+
+  - name: Disallow password authentication
+    action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+    notify: Restart sshd
+
+  - name: Install unattended-upgrades
+    action: apt pkg=unattended-upgrades state=present
+  
+  - name: Adjust APT update intervals
+    action: copy src=config/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
+
+  - name: Make sure unattended-upgrades only installs from $ubunt_release-security
+    action: lineinfile dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
+
+  - name: Copy debconf selections so that Postfix can configure itself non-interactively
+    copy: src=config/postfix_selections  dest=/tmp/postfix_selections
+
+  - name: Set up Postfix to relay mail
+    action: command debconf-set-selections /tmp/postfix_selections
+
+  - name: Install logwatch
+    action: apt pkg=logwatch state=installed
+
+  - name: Make logwatch mail $logwatch_email daily
+    action: lineinfile dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto $logwatch_email --detail high" state=present create=yes
+
+  handlers:
+  - name: Restart sshd
+    action: service sshd state=restarted
