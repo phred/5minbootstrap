@@ -42,7 +42,7 @@
   - name: Adjust APT update intervals
     action: copy src=config/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
 
-  - name: Make sure unattended-upgrades only installs from $ubunt_release-security
+  - name: Make sure unattended-upgrades only installs from $ubuntu_release-security
     action: lineinfile dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
 
   - name: Copy debconf selections so that Postfix can configure itself non-interactively
