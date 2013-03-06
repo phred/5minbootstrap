@@ -9,8 +9,11 @@
     longpass: "Please enter a long and complex password for the deploy user.  Store it somewhere safe!"
 
   tasks:
-  - name: Update all packages on the system
-    action: apt update_cache=yes upgrade=yes
+  - name: Update APT package cache
+    action: apt update_cache=yes
+
+  - name: Run apt-get upgrade
+    action: command apt-get upgrade
 
   - name: Install fail2ban
     action: apt pkg=fail2ban state=installed
