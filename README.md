@@ -20,6 +20,10 @@ Run:
 
     yourmachine$ ssh root@server
 
+Enter the initial root password from your hosting provider, then run:
+
+	root@server# passwd
+
 
 ## Step 2: Fetch the bootstrap recipe
 
