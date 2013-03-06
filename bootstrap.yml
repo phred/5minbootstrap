@@ -1,6 +1,5 @@
 ---
 - hosts: newservers
-  sudo: True
   vars:
   - ubuntu_release: lucid
   - logwatch_email: ops@practicalops.com
