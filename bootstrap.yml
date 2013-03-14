@@ -10,9 +10,12 @@
   tasks:
   - name: Update APT package cache
     action: apt update_cache=yes
-
+  
+  # was: apt-get upgrade, which hangs forever waiting for input if there are actually updates
+  # Also, as of 1.1 (devel), ansible supports 
+  # action: apt upgrade=yes
   - name: Run apt-get upgrade
-    action: command apt-get upgrade
+    action: command apt-get -y upgrade
 
   - name: Install fail2ban
     action: apt pkg=fail2ban state=installed
@@ -61,4 +64,5 @@
 
   handlers:
   - name: Restart sshd
-    action: service sshd state=restarted
+    # this fails, at least on ansible 1.1, it wants service name=ssh
+    action: service name=ssh state=restarted
