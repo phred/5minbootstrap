@@ -3,9 +3,8 @@
   vars:
   - ubuntu_release: lucid
   - logwatch_email: ops@practicalops.com
-
-  vars_prompt:
-    longpass: "Please enter a long and complex password for the deploy user.  Store it somewhere safe!"
+  - deploy_password: '$6$AC3bdCF7!$rVroC3j8Ue5M2sEsJeXOzfztBNaBzKEiOzfkOSpqDHjcDDLP65dSRlUeHSir9JiC1k6AAWS2lYHJzmuxbojz0/'
+    # crypted password, generated on a Linux box using: echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$AC3bdCF7!")' | python -
 
   tasks:
   - name: Update APT package cache
@@ -18,8 +17,7 @@
     action: apt pkg=fail2ban state=installed
 
   - name: Add deployment user
-    action: user name=deploy password=$longpass
-
+    action: user name=deploy password=$deploy_password
 
   - name: Add authorized deploy key for Fred
     action: authorized_key user=deploy key='$FILE(fred.pub)'
