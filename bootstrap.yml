@@ -59,4 +59,4 @@
 
   handlers:
   - name: Restart sshd
-    action: service sshd state=restarted
+    action: service name=sshd state=restarted
