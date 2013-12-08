@@ -29,12 +29,12 @@
     lineinfile: dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) ALL" state=present
 
   - name: Disallow root SSH access
-    lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
-    notify: Restart sshd
+    lineinfile: dest=/etc/ssh/ssh_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+    notify: Restart ssh
 
   - name: Disallow password authentication
-    lineinfile: dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
-    notify: Restart sshd
+    lineinfile: dest=/etc/ssh/ssh_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+    notify: Restart ssh
 
   - name: Install unattended-upgrades
     apt: pkg=unattended-upgrades state=present
@@ -58,5 +58,5 @@
     lineinfile: dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto $logwatch_email --detail high" state=present create=yes
 
   handlers:
-  - name: Restart sshd
-    service: name=sshd state=restarted
+  - name: Restart ssh
+    service: name=ssh state=restarted
