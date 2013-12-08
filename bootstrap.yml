@@ -11,7 +11,7 @@
     action: apt update_cache=yes
 
   - name: Run apt-get upgrade
-    action: command apt-get upgrade
+    action: apt upgrade=yes
 
   - name: Install fail2ban
     action: apt pkg=fail2ban state=installed
