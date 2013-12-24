@@ -14,7 +14,7 @@
     apt: upgrade=yes
 
   - name: Install fail2ban
-    apt: pkg=fail2ban state=installed
+    apt: pkg=fail2ban state=present
 
   - name: Add deployment user
     user: name=deploy password=$deploy_password
@@ -46,13 +46,13 @@
     lineinfile: dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
 
   - name: Copy debconf selections so that Postfix can configure itself non-interactively
-    copy: src=config/postfix_selections  dest=/tmp/postfix_selections
+    copy: src=config/postfix_selections dest=/tmp/postfix_selections
 
   - name: Set up Postfix to relay mail
     command: debconf-set-selections /tmp/postfix_selections
 
   - name: Install logwatch
-    apt: pkg=logwatch state=installed
+    apt: pkg=logwatch state=present
 
   - name: Make logwatch mail $logwatch_email daily
     lineinfile: dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto $logwatch_email --detail high" state=present create=yes
