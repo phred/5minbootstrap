@@ -8,55 +8,55 @@
 
   tasks:
   - name: Update APT package cache
-    action: apt update_cache=yes
+    apt: update_cache=yes
 
   - name: Run apt-get upgrade
-    action: command apt-get upgrade
+    apt: upgrade=yes
 
   - name: Install fail2ban
-    action: apt pkg=fail2ban state=installed
+    apt: pkg=fail2ban state=present
 
   - name: Add deployment user
-    action: user name=deploy password=$deploy_password
+    user: name=deploy password=$deploy_password
 
   - name: Add authorized deploy key for Fred
-    action: authorized_key user=deploy key='$FILE(fred.pub)'
+    authorized_key: user=deploy key='$FILE(fred.pub)'
 
   - name: Remove sudo group rights
-    action: lineinfile dest=/etc/sudoers regexp="^%sudo" state=absent
+    lineinfile: dest=/etc/sudoers regexp="^%sudo" state=absent
 
   - name: Add deploy user to sudoers
-    action: lineinfile dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) ALL" state=present
+    lineinfile: dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) ALL" state=present
 
   - name: Disallow root SSH access
-    action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
-    notify: Restart sshd
+    lineinfile: dest=/etc/ssh/ssh_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+    notify: Restart ssh
 
   - name: Disallow password authentication
-    action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
-    notify: Restart sshd
+    lineinfile: dest=/etc/ssh/ssh_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+    notify: Restart ssh
 
   - name: Install unattended-upgrades
-    action: apt pkg=unattended-upgrades state=present
+    apt: pkg=unattended-upgrades state=present
   
   - name: Adjust APT update intervals
-    action: copy src=config/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
+    copy: src=config/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
 
   - name: Make sure unattended-upgrades only installs from $ubuntu_release-security
-    action: lineinfile dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
+    lineinfile: dest=/etc/apt/apt.conf.d/50unattended-upgrades regexp="$ubuntu_release-updates" state=absent
 
   - name: Copy debconf selections so that Postfix can configure itself non-interactively
-    copy: src=config/postfix_selections  dest=/tmp/postfix_selections
+    copy: src=config/postfix_selections dest=/tmp/postfix_selections
 
   - name: Set up Postfix to relay mail
-    action: command debconf-set-selections /tmp/postfix_selections
+    command: debconf-set-selections /tmp/postfix_selections
 
   - name: Install logwatch
-    action: apt pkg=logwatch state=installed
+    apt: pkg=logwatch state=present
 
   - name: Make logwatch mail $logwatch_email daily
-    action: lineinfile dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto $logwatch_email --detail high" state=present create=yes
+    lineinfile: dest=/etc/cron.daily/00logwatch regexp="^/usr/sbin/logwatch" line="/usr/sbin/logwatch --output mail --mailto $logwatch_email --detail high" state=present create=yes
 
   handlers:
-  - name: Restart sshd
-    action: service name=sshd state=restarted
+  - name: Restart ssh
+    service: name=ssh state=restarted
